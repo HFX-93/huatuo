@@ -1,6 +1,5 @@
 #include "InterpreterModule.h"
 
-
 #include "Interpreter.h"
 
 #include <unordered_map>
@@ -12,7 +11,7 @@
 #include "MethodBridge.h"
 #include "../metadata/MetadataModule.h"
 #include "../metadata/MetadataUtil.h"
-#include "../transform/transform.h"
+#include "../transform/Transform.h"
 
 
 
@@ -23,14 +22,31 @@ namespace interpreter
 {
 	il2cpp::os::ThreadLocalValue InterpreterModule::s_machineState;
 
-	struct CStringHash {
-		size_t operator()(const char* _Keyval) const noexcept {
-			return std::_Hash_array_representation(_Keyval, std::strlen(_Keyval)); // map -0 to 0
+	struct CStringHash 
+	{
+		size_t operator()(const char* s) const noexcept
+		{
+			uint32_t hash = 0;
+
+			for (; *s; ++s)
+			{
+				hash += *s;
+				hash += (hash << 10);
+				hash ^= (hash >> 6);
+			}
+
+			hash += (hash << 3);
+			hash ^= (hash >> 11);
+			hash += (hash << 15);
+
+			return hash;
 		}
 	};
 
-	struct CStringEqualTo {
-		bool operator()(const char* _Left, const char* _Right) const {
+	struct CStringEqualTo
+	{
+		bool operator()(const char* _Left, const char* _Right) const
+		{
 			return std::strcmp(_Left, _Right) == 0;
 		}
 	};
@@ -48,7 +64,7 @@ namespace interpreter
 			{
 				break;
 			}
-			s_calls.insert_or_assign(method.signature, method);
+			s_calls.insert({ method.signature, method });
 		}
 
 		for (size_t i = 0; ; i++)
@@ -58,7 +74,7 @@ namespace interpreter
 			{
 				break;
 			}
-			s_invokes.insert_or_assign(method.signature, method);
+			s_invokes.insert({ method.signature, method });
 		}
 	}
 
@@ -113,7 +129,7 @@ namespace interpreter
 				}
 				else
 				{
-					pos += std::sprintf(sigBuf + pos, "s%lld", (klass->instance_size - sizeof(Il2CppObject) + 7) / 8);
+					pos += std::sprintf(sigBuf + pos, "s%d", (int)((klass->instance_size - sizeof(Il2CppObject) + 7) / 8));
 				}
 			}
 			else
@@ -129,7 +145,7 @@ namespace interpreter
 				Il2CppClass* klass = il2cpp::vm::Class::FromIl2CppType(type);
 				if (klass->valuetype && klass->instance_size > sizeof(Il2CppObject) + 8)
 				{
-					pos += std::sprintf(sigBuf + pos, "s%lld", (klass->instance_size - sizeof(Il2CppObject) + 7) / 8);
+					pos += std::sprintf(sigBuf + pos, "s%d", (int)(klass->instance_size - sizeof(Il2CppObject) + 7) / 8);
 				}
 				else
 				{
