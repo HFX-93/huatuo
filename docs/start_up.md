@@ -2,7 +2,7 @@
 
 当前仅支持 2020.3.7f版本(后续很快会支持2018以后的全系列版本)。
 
-可参考 [示例项目](https://github.com/focus-creative-games/huatuo_trial)。
+可参考 [示例项目](https://github.com/focus-creative-games/huatuo_trial)  [huatuo尝鲜视频教程](https://www.bilibili.com/video/BV1QL411w7z2/)
 
 ## 使用
 
@@ -39,6 +39,10 @@ public class App
 ```
 
 - 主工程中，使用标准反射函数加载Hotfix.dll,以示例 LoadDll.cs 为例
+
+- 如果需要加载AssetBundle, 请查看示例工程中的LoadDllFromAssetbundle.cs文件
+
+  同时也在菜单中添加了简单hotfix.dll文件的ab制作工具
 
 ```c#
 
@@ -82,9 +86,8 @@ public class LoadDll : MonoBehaviour
   - 将 HotFix.dll拷到StreamingAssets下
   - 发布选项设置
     - Scripting Backend 选择 il2cpp backend
-    - Api Compatible level 选择 .NET 4.x
     - 取消 use incremental GC
-  - 发布
+  - 发布 (必须选择相应平台64位版本)
   - 进入场景后，应该能看到日志 "hello,huatuo"
 
 - 测试热更新
